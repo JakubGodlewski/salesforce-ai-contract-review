@@ -160,6 +160,14 @@ private class ContractAnalysisServiceTest {
     }
 
     @IsTest
+    static void rejectsHallucinatedField() {
+        assertInvalidAnalysis(
+            '{"overallStatus":"MISMATCH","summary":"x","comparisons":[' +
+            '{"field":"annualRevenue","status":"MISMATCH","severity":"HIGH","confidence":0.9}]}'
+        );
+    }
+
+    @IsTest
     static void rejectsUnsupportedSeverity() {
         assertInvalidAnalysis(
             '{"overallStatus":"MISMATCH","summary":"x","comparisons":[' +
@@ -271,6 +279,17 @@ private class ContractAnalysisServiceTest {
         return outcome.result.overallStatus;
     }
 
+    private static final List<String> ALLOWED_TEST_FIELDS = new List<String>{
+        'accountName',
+        'amount',
+        'discount',
+        'paymentTerms',
+        'noticePeriodDays',
+        'contractStartDate',
+        'contractEndDate',
+        'contractTermMonths'
+    };
+
     private static String analysisJson(
         List<String> statuses,
         String overallStatus
@@ -280,7 +299,7 @@ private class ContractAnalysisServiceTest {
 
         for (String status : statuses) {
             comparisons.add(new Map<String, Object>{
-                'field' => 'testField' + index,
+                'field' => ALLOWED_TEST_FIELDS[index],
                 'salesforceSource' => 'Opportunity',
                 'salesforceValue' => 'Salesforce value',
                 'contractValue' => 'Contract value',

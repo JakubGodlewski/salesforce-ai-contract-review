@@ -16,6 +16,18 @@ public with sharing class ContractAnalysisService {
             'HIGH'
         };
 
+    private static final Set<String> ALLOWED_FIELDS =
+        new Set<String>{
+            'accountName',
+            'amount',
+            'discount',
+            'paymentTerms',
+            'noticePeriodDays',
+            'contractStartDate',
+            'contractEndDate',
+            'contractTermMonths'
+        };
+
     /**
      * Runs the complete contract analysis process.
      *
@@ -159,6 +171,14 @@ public with sharing class ContractAnalysisService {
         if (String.isBlank(comparison.field)) {
             throw new ContractAnalysisException(
                 'Comparison does not contain a field name.'
+            );
+        }
+
+        if (!ALLOWED_FIELDS.contains(comparison.field)) {
+            throw new ContractAnalysisException(
+                'Unexpected field "' +
+                comparison.field +
+                '" is not part of the allowed field set.'
             );
         }
 
