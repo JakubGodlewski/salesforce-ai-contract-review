@@ -1,0 +1,19 @@
+flowchart TB
+    subgraph SF["Salesforce"]
+        OPP["Opportunity"] --- CONTRACT["Contract"] --- FILES["Salesforce Files (PDF)"]
+        OPP --> FLOW["Screen Flow + LWC"]
+        FILES --> FLOW
+        FLOW --> SERVICE["ContractAnalysisService"]
+        SERVICE --> CTX["ContractContext"]
+        SERVICE --> FILESVC["ContractFile"]
+        CTX --> CLAUDE["ClaudeClient"]
+        FILESVC --> CLAUDE
+        CLAUDE --> CRED["Named / External Credential"]
+    end
+
+    CRED --> ANTHROPIC["Anthropic API"]
+    ANTHROPIC --> JSON["Structured JSON"]
+    JSON --> VALIDATION["Apex Validation"]
+    VALIDATION --> RULES["Deterministic Business Rules"]
+    RULES --> RESULT["Contract Review + Contract Discrepancies"]
+    RESULT --> PANEL["Opportunity Review LWC"]

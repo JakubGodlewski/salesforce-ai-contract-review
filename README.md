@@ -83,66 +83,9 @@ The analysis is then persisted in Salesforce and remains available after the Flo
 
 The application separates probabilistic AI responsibilities from deterministic Salesforce responsibilities.
 
-```text
-Opportunity
-    |
-    +-- Amount
-    +-- Discount
-    +-- Payment Terms
-    +-- Notice Period
-    +-- Account
-    |
-    v
-Contract
-    |
-    +-- Start Date
-    +-- End Date
-    +-- Contract Term
-    |
-    v
-Salesforce Files / ContentVersion
-    |
-    v
-Screen Flow
-    |
-    +-- Contract PDF Selector LWC
-    |
-    v
-ContractAnalysisAction
-    |
-    v
-ContractAnalysisService
-    |
-    +-- ContractContextService
-    +-- ContractFileService
-    +-- ClaudeClient
-    |
-    v
-Named Credential
-    |
-    v
-External Credential
-    |
-    v
-Anthropic Messages API
-    |
-    v
-Structured JSON
-    |
-    v
-Apex Validation
-    |
-    v
-Deterministic Overall Result
-    |
-    v
-Contract_Review__c
-    |
-    +-- Contract_Discrepancy__c
-    |
-    v
-contractReviewPanel LWC
-```
+![Architecture diagram](docs/architecture-diagram.png)
+
+The boundary matters more than the box shapes: everything inside the Salesforce boundary is deterministic or platform-secured. Only the contract PDF and the Salesforce comparison baseline cross that boundary, and only structured JSON comes back. Claude never decides the final business outcome — Apex validates the response, enforces the field allowlist, and calculates the overall result before anything is persisted.
 
 ---
 
