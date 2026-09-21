@@ -84,50 +84,65 @@ The analysis is then persisted in Salesforce and remains available after the Flo
 The application separates probabilistic AI responsibilities from deterministic Salesforce responsibilities.
 
 ```text
-┌──────────────────────── Salesforce ────────────────────────┐
-│                                                              │
-│  Opportunity ─── Contract ─── Salesforce Files (PDF)         │
-│       │                         │                            │
-│       │                         │                            │
-│       └──────────┬──────────────┘                            │
-│                   ▼                                          │
-│            Screen Flow + LWC                                 │
-│                   │                                          │
-│                   ▼                                          │
-│          ContractAnalysisService                             │
-│             │             │                                  │
-│             ▼             ▼                                  │
-│   ContractContext     ContractFile                            │
-│             │             │                                  │
-│             └──────┬──────┘                                  │
-│                     ▼                                        │
-│               ClaudeClient                                    │
-│                     │                                        │
-│                     ▼                                        │
-│          Named / External Credential                          │
-│                     │                                        │
-└─────────────────────┼────────────────────────────────────────┘
-                       ▼
-                 Anthropic API
-                       │
-                       ▼
-                Structured JSON
-                       │
-                       ▼
-                Apex Validation
-                       │
-                       ▼
-          Deterministic Business Rules
-                       │
-                       ▼
-  Contract Review + Contract Discrepancies
-                       │
-                       ▼
-          Opportunity Review LWC
+Opportunity
+    |
+    +-- Amount
+    +-- Discount
+    +-- Payment Terms
+    +-- Notice Period
+    +-- Account
+    |
+    v
+Contract
+    |
+    +-- Start Date
+    +-- End Date
+    +-- Contract Term
+    |
+    v
+Salesforce Files / ContentVersion
+    |
+    v
+Screen Flow
+    |
+    +-- Contract PDF Selector LWC
+    |
+    v
+ContractAnalysisAction
+    |
+    v
+ContractAnalysisService
+    |
+    +-- ContractContextService
+    +-- ContractFileService
+    +-- ClaudeClient
+    |
+    v
+Named Credential
+    |
+    v
+External Credential
+    |
+    v
+Anthropic Messages API
+    |
+    v
+Structured JSON
+    |
+    v
+Apex Validation
+    |
+    v
+Deterministic Overall Result
+    |
+    v
+Contract_Review__c
+    |
+    +-- Contract_Discrepancy__c
+    |
+    v
+contractReviewPanel LWC
 ```
-
-The boundary matters more than the box shapes: everything above the Anthropic API call stays inside Salesforce and is deterministic or platform-secured. Only the contract PDF and the Salesforce comparison baseline cross that boundary, and only structured JSON comes back. Claude never decides the final business outcome — Apex validates the response, enforces the field allowlist, and calculates the overall result before anything is persisted.
-
 
 ---
 
