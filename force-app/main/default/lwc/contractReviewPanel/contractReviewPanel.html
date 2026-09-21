@@ -1,0 +1,94 @@
+<template>
+    <article class="review-card">
+        <template lwc:if={isLoading}>
+            <div class="state state-loading" role="status">
+                <lightning-spinner alternative-text="Loading contract review" size="small"></lightning-spinner>
+                <span>Loading latest review</span>
+            </div>
+        </template>
+
+        <template lwc:elseif={errorMessage}>
+            <div class="state state-error" role="alert">
+                <span class="state-icon">!</span>
+                <div>
+                    <h2>Contract review unavailable</h2>
+                    <p>{errorMessage}</p>
+                </div>
+            </div>
+        </template>
+
+        <template lwc:elseif={hasReview}>
+            <header class="review-header">
+                <div>
+                    <div class="eyebrow"><span class="sparkle">✦</span> AI CONTRACT REVIEW</div>
+                    <h1>Latest review</h1>
+                </div>
+                <button class="link-button" type="button" onclick={handleViewReview}>
+                    View Review <span aria-hidden="true">→</span>
+                </button>
+            </header>
+
+            <section class="review-overview">
+                <div class="result-row">
+                    <span class={resultBadgeClass}>{resultIcon} {review.overallResult}</span>
+                    <span class="date">Analyzed {formattedAnalysisDate}</span>
+                </div>
+                <div class="metrics-row">
+                    <strong>{review.discrepancyCount} discrepancies</strong>
+                    <span>{review.model}</span>
+                </div>
+                <p class="summary">{review.summary}</p>
+            </section>
+
+            <section class="discrepancies" aria-labelledby="discrepancy-heading">
+                <div class="section-heading">
+                    <h2 id="discrepancy-heading">Discrepancies</h2>
+                    <span>{review.discrepancyCount}</span>
+                </div>
+                <template for:each={discrepancies} for:item="discrepancy">
+                    <article class="discrepancy" key={discrepancy.id}>
+                        <div class="discrepancy-heading">
+                            <h3><span class={discrepancy.severityClass}>{discrepancy.severityIcon}</span>{discrepancy.fieldLabel}</h3>
+                            <div class="severity-meta">
+                                <span class={discrepancy.severityClass}>{discrepancy.severity}</span>
+                                <span class="confidence">{discrepancy.confidenceLabel}</span>
+                            </div>
+                        </div>
+                        <div class="value-grid">
+                            <div>
+                                <span class="value-label">Salesforce</span>
+                                <strong>{discrepancy.salesforceValue}</strong>
+                            </div>
+                            <div>
+                                <span class="value-label">Contract</span>
+                                <strong>{discrepancy.contractValue}</strong>
+                            </div>
+                        </div>
+                        <template lwc:if={discrepancy.contractEvidence}>
+                            <div class="evidence">
+                                <span class="value-label">Evidence</span>
+                                <q>{discrepancy.contractEvidence}</q>
+                            </div>
+                        </template>
+                        <template lwc:if={discrepancy.explanation}>
+                            <p class="explanation">{discrepancy.explanation}</p>
+                        </template>
+                    </article>
+                </template>
+            </section>
+
+            <footer class="review-footer">
+                <span>Confidence values are AI-generated and should be reviewed.</span>
+                <button class="secondary-button" type="button" onclick={handleViewReview}>View Full Review</button>
+            </footer>
+        </template>
+
+        <template lwc:else>
+            <div class="state state-empty">
+                <span class="empty-mark">✦</span>
+                <h2>No contract review yet</h2>
+                <p>Run Analyze Contract with AI to see the latest comparison here.</p>
+            </div>
+        </template>
+    </article>
+</template>

@@ -1,0 +1,28 @@
+:host {
+    display: block;
+}
+
+.selector {
+    padding: 18px;
+    border: 1px solid #d8e1e8;
+    border-radius: 6px;
+    background: #ffffff;
+}
+
+h2 {
+    margin: 0;
+    color: #163348;
+    font-size: 1.05rem;
+}
+
+.help-text {
+    margin: 6px 0 16px;
+    color: #607786;
+}
+
+.error {
+    padding: 10px;
+    color: #9a2d2d;
+    background: #fff4f2;
+    border-radius: 4px;
+}

@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<LightningComponentBundle xmlns="http://soap.sforce.com/2006/04/metadata">
+    <apiVersion>67.0</apiVersion>
+    <isExposed>true</isExposed>
+    <masterLabel>Contract PDF Selector</masterLabel>
+    <description>Lets a Flow user select the contract PDF used for AI analysis.</description>
+    <targets>
+        <target>lightning__FlowScreen</target>
+    </targets>
+    <targetConfigs>
+        <targetConfig targets="lightning__FlowScreen">
+            <property name="recordId" type="String" label="Opportunity Id" role="inputOnly" />
+            <property name="selectedContentVersionId" type="String" label="Selected PDF Version Id" role="outputOnly" />
+            <property name="selectedDocumentId" type="String" label="Selected PDF Document Id (legacy)" role="outputOnly" />
+        </targetConfig>
+    </targetConfigs>
+</LightningComponentBundle>

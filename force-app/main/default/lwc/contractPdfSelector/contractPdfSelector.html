@@ -1,0 +1,30 @@
+<template>
+    <div class="selector">
+        <h2>Select contract PDF</h2>
+        <p class="help-text">Choose which PDF should be used for this analysis.</p>
+        <template lwc:if={isLoading}>
+            <lightning-spinner alternative-text="Loading contract PDFs" size="small"></lightning-spinner>
+        </template>
+        <template lwc:elseif={errorMessage}>
+            <div class="error" role="alert">{errorMessage}</div>
+        </template>
+        <template lwc:else>
+            <template lwc:if={hasOptions}>
+                <lightning-combobox
+                    name="contractPdf"
+                    label="Contract PDF"
+                    value={selectedContentVersionId}
+                    options={options}
+                    required
+                    onchange={handleChange}>
+                </lightning-combobox>
+            </template>
+            <template lwc:else>
+                <div class="error" role="alert">
+                    No PDF files were found for this Contract.<br />
+                    Attach a PDF to the Contract before running the analysis.
+                </div>
+            </template>
+        </template>
+    </div>
+</template>

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<PermissionSetGroup xmlns="http://soap.sforce.com/2006/04/metadata">
+    <description>Permission set group for users who can run Analyze Contract with AI.</description>
+    <label>Contract Analysis AI User Group</label>
+    <permissionSets>Contract_Analysis_AI_User</permissionSets>
+</PermissionSetGroup>
