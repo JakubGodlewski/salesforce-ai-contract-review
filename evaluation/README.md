@@ -1,42 +1,28 @@
 # Salesforce AI Contract Review
 
-A Salesforce proof of concept that uses **Anthropic Claude** to review
-contract PDFs and compare contractual terms with structured Salesforce
-data.
+A Salesforce proof of concept that uses **Anthropic Claude** to review contract PDFs and compare contractual terms with structured Salesforce data.
 
-The solution combines **Apex, Lightning Web Components, Flow, Salesforce
-Files, Named Credentials, External Credentials, Custom Metadata, and the
-Anthropic Messages API** to demonstrate an end-to-end GenAI use case
-implemented natively on the Salesforce Platform.
+The solution combines **Apex, Lightning Web Components, Salesforce Flow, Salesforce Files, Named Credentials, External Credentials, Custom Metadata, and the Anthropic Messages API** to demonstrate an end-to-end GenAI use case implemented natively on the Salesforce Platform.
 
-> **Project status:** Proof of Concept / Portfolio Project\
+> **Project status:** Proof of Concept / Portfolio Project  
 > All contract examples and evaluation data are synthetic.
 
-------------------------------------------------------------------------
+---
 
 ## Business Problem
 
 Commercial contract data often exists in two places:
 
--   structured CRM fields in Salesforce,
--   unstructured legal documents stored as PDF files.
+- structured CRM fields in Salesforce,
+- unstructured legal documents stored as PDF files.
 
 Differences between these sources can be difficult to identify manually.
 
-For example, Salesforce may contain:
+For example, Salesforce may contain a contract value, discount, payment terms, notice period, and contract dates while the signed document contains different, missing, or ambiguous terms.
 
--   Contract Value: **USD 120,000**
--   Discount: **10%**
--   Payment Terms: **Net 30**
--   Notice Period: **60 days**
+This project demonstrates how an AI-assisted validation process can compare both sources and surface discrepancies directly in Salesforce.
 
-while the contract document may contain different, missing, or ambiguous
-terms.
-
-This project demonstrates how an AI-assisted validation process can
-compare both sources and surface discrepancies directly in Salesforce.
-
-------------------------------------------------------------------------
+---
 
 ## Solution Overview
 
@@ -44,54 +30,46 @@ A Salesforce user starts the analysis from an **Opportunity**.
 
 The application:
 
-1.  Retrieves structured data from the Opportunity and its related
-    Contract.
-2.  Finds PDF files associated with the Contract.
-3.  Allows the user to select the exact PDF version to analyze.
-4.  Sends the PDF and structured Salesforce data to Claude.
-5.  Receives a structured JSON analysis.
-6.  Validates the AI response in Apex.
-7.  Deterministically calculates the overall review result.
-8.  Persists the review and detected discrepancies in Salesforce.
-9.  Displays the latest analysis directly on the Opportunity record.
+1. Retrieves structured data from the Opportunity and its related Contract.
+2. Finds PDF files associated with the Contract.
+3. Allows the user to select the exact PDF version to analyze.
+4. Sends the PDF and structured Salesforce data to Claude.
+5. Receives a structured JSON analysis.
+6. Validates the AI response in Apex.
+7. Deterministically calculates the overall review result.
+8. Persists the review and detected discrepancies in Salesforce.
+9. Displays the latest analysis directly on the Opportunity record.
 
-The LLM is responsible for interpreting unstructured contract language,
-while Salesforce remains responsible for validation, deterministic
-business rules, persistence, security, and user interaction.
+The LLM is responsible for interpreting unstructured contract language, while Salesforce remains responsible for validation, deterministic business rules, persistence, security, and user interaction.
 
-------------------------------------------------------------------------
+---
 
 ## Demo
 
-The latest AI review is displayed directly on the Opportunity record.
+The latest AI review is displayed directly on the Opportunity.
 
-![AI Contract Review - Review
-Required](docs/screenshots/opportunity-review-required.png)
+![AI Contract Review - Review Required](docs/screenshots/opportunity-review-required.png)
 
-In this example, the contract does not specify the payment terms stored
-in Salesforce. The field is classified as `UNKNOWN`, which results in
-the deterministic overall status `REVIEW_REQUIRED`.
+In this example, the contract does not contain the payment terms stored in Salesforce. The field is classified as `UNKNOWN`, resulting in the deterministic overall status `REVIEW_REQUIRED`.
 
-The component also supports a clean match state:
+The same component also supports a clean match state:
 
 ![AI Contract Review - Match](docs/screenshots/opportunity-match.png)
 
-------------------------------------------------------------------------
+---
 
 ## Architecture
 
 ![Architecture](docs/architecture.png)
 
-``` text
+```text
 Opportunity
     |
     +-- Structured commercial data
-    |
     v
 Contract
     |
     +-- Start Date / End Date / Contract Term
-    |
     v
 Salesforce Files / ContentVersion
     |
@@ -124,146 +102,121 @@ Apex Validation + Deterministic Aggregation
 Contract_Review__c
     |
     +-- Contract_Discrepancy__c
-    |
     v
 Opportunity LWC / Reporting
 ```
 
-------------------------------------------------------------------------
+---
 
 ## Technology Stack
 
-  Area             Technology
-  ---------------- ----------------------------------------
-  CRM Platform     Salesforce
-  Backend          Apex
-  Frontend         Lightning Web Components
-  Orchestration    Salesforce Flow
-  File Storage     Salesforce Files / ContentVersion
-  AI Provider      Anthropic Claude
-  Integration      REST / Anthropic Messages API
-  Authentication   Named Credential + External Credential
-  Configuration    Custom Metadata Types
-  Persistence      Salesforce Custom Objects
-  Security         Sharing + Permission Sets + CRUD/FLS
-  Testing          Apex Tests + HttpCalloutMock
-  Source Control   Git / Salesforce DX
+| Area | Technology |
+| --- | --- |
+| CRM Platform | Salesforce |
+| Backend | Apex |
+| Frontend | Lightning Web Components |
+| Orchestration | Salesforce Flow |
+| File Storage | Salesforce Files / ContentVersion |
+| AI Provider | Anthropic Claude |
+| Integration | REST / Anthropic Messages API |
+| Authentication | Named Credential + External Credential |
+| Configuration | Custom Metadata Types |
+| Persistence | Salesforce Custom Objects |
+| Security | Sharing + Permission Sets |
+| Testing | Apex Tests + HttpCalloutMock |
+| Source Control | Git / Salesforce DX |
 
-------------------------------------------------------------------------
+---
 
 ## Data Model
 
 ### Opportunity
 
-The Opportunity contains the structured commercial terms used for
-comparison.
+The Opportunity provides structured commercial terms used during comparison, including:
 
-Relevant fields include:
-
--   `Account`
--   `Amount`
--   `Discount__c`
--   `Payment_Terms__c`
--   `Notice_Period_Days__c`
--   `ContractId`
+- `Account`
+- `Amount`
+- `Discount__c`
+- `Payment_Terms__c`
+- `Notice_Period_Days__c`
+- `ContractId`
 
 ### Contract
 
 The standard Salesforce Contract object provides:
 
--   `StartDate`
--   `EndDate`
--   `ContractTerm`
+- `StartDate`
+- `EndDate`
+- `ContractTerm`
 
 Contract PDFs are stored using Salesforce Files.
 
 ### Contract Review
 
-`Contract_Review__c` represents one AI analysis execution.
+`Contract_Review__c` represents one analysis execution and stores information such as:
 
-It stores information such as:
-
--   related Opportunity,
--   related Contract,
--   analysis date,
--   model,
--   processing status,
--   overall result,
--   discrepancy count,
--   summary.
+- related Opportunity,
+- related Contract,
+- analysis date,
+- model,
+- processing status,
+- overall result,
+- discrepancy count,
+- summary.
 
 ### Contract Discrepancy
 
-`Contract_Discrepancy__c` stores individual issues identified during a
-review.
+`Contract_Discrepancy__c` stores individual issues requiring attention, including:
 
-Each discrepancy can contain:
+- field,
+- Salesforce source and value,
+- contract value,
+- status,
+- severity,
+- confidence,
+- contract evidence,
+- explanation.
 
--   field,
--   Salesforce source,
--   Salesforce value,
--   contract value,
--   status,
--   severity,
--   confidence,
--   contract evidence,
--   explanation.
+`MATCH` comparisons are not persisted as discrepancy records.
 
-Only comparisons requiring attention are persisted as discrepancy
-records.
-
-------------------------------------------------------------------------
+---
 
 ## AI Classification Model
 
 Each compared field receives one of four statuses:
 
-  -----------------------------------------------------------------------
-  Status                              Meaning
-  ----------------------------------- -----------------------------------
-  `MATCH`                             Salesforce and the contract contain
-                                      equivalent definitive values
+| Status | Meaning |
+| --- | --- |
+| `MATCH` | Salesforce and the contract contain equivalent definitive values |
+| `MISMATCH` | Salesforce and the contract contain conflicting definitive values |
+| `UNKNOWN` | The contract contains no relevant information for the field |
+| `AMBIGUOUS` | Relevant information exists, but the contract does not establish one definitive value |
 
-  `MISMATCH`                          Salesforce and the contract contain
-                                      conflicting definitive values
-
-  `UNKNOWN`                           The contract does not contain
-                                      relevant information
-
-  `AMBIGUOUS`                         Relevant contract information
-                                      exists but does not establish one
-                                      definitive value
-  -----------------------------------------------------------------------
-
-This distinction is important because missing or ambiguous information
-should not automatically be interpreted as a mismatch.
+This distinction prevents missing or ambiguous information from automatically being treated as a mismatch.
 
 For example:
 
-``` text
+```text
 Salesforce Discount: 10%
 
 Contract:
 "A discount of up to 15% may be applied subject to management approval."
 
-Result:
+Classification:
 AMBIGUOUS
 ```
 
-The contract discusses the discount but does not establish one
-definitive contractual value.
+The contract discusses the discount, but it does not establish one definitive contractual value.
 
-------------------------------------------------------------------------
+---
 
 ## Deterministic Overall Result
 
-The LLM does **not** have final authority over the overall review
-result.
+The LLM does **not** have final authority over the overall review result.
 
-Claude classifies individual fields, while Apex calculates the final
-result deterministically:
+Claude classifies individual fields, while Apex calculates the final result deterministically:
 
-``` text
+```text
 If any comparison is MISMATCH
     -> MISMATCH
 
@@ -274,47 +227,39 @@ Else
     -> MATCH
 ```
 
-This prevents inconsistent aggregate classifications from becoming the
-system result.
+This keeps an important aggregate business decision inside deterministic application logic instead of delegating it entirely to the language model.
 
-It also keeps an important business decision inside deterministic
-application logic rather than delegating it entirely to the language
-model.
-
-------------------------------------------------------------------------
+---
 
 ## Prompt Configuration
 
-AI configuration is stored in the `AI_Prompt_Config__mdt` Custom
-Metadata Type instead of being hard-coded in Apex.
+AI configuration is stored in the `AI_Prompt_Config__mdt` Custom Metadata Type rather than being hard-coded in Apex.
 
 The configuration includes:
 
--   active status,
--   Claude model,
--   maximum output tokens,
--   prompt,
--   prompt version.
+- active status,
+- Claude model,
+- maximum output tokens,
+- prompt,
+- prompt version.
 
 The current configuration uses:
 
-``` text
+```text
 claude-sonnet-4-6
 ```
 
-This allows prompt behavior and model configuration to evolve
-independently from the integration code.
+This allows prompt behavior and model configuration to evolve independently from the integration code.
 
-------------------------------------------------------------------------
+---
 
 ## Structured AI Output
 
-Claude is instructed to return structured JSON rather than free-form
-text.
+Claude returns structured JSON rather than free-form text.
 
-Example comparison:
+Example:
 
-``` json
+```json
 {
   "field": "discount",
   "salesforceSource": "Opportunity",
@@ -328,28 +273,25 @@ Example comparison:
 }
 ```
 
-The response is deserialized into strongly typed Apex DTOs before it can
-be used by the rest of the application.
+The response is deserialized into strongly typed Apex DTOs before being used by the rest of the application.
 
-------------------------------------------------------------------------
+---
 
 ## AI Response Validation
 
 LLM output is treated as **untrusted input**.
 
-Before persistence, Apex validates the returned structure and values,
-including:
+Before persistence, Apex validates the returned data, including:
 
--   required comparison data,
--   allowed comparison statuses,
--   allowed severity values,
--   confidence range between `0` and `1`,
--   valid response structure.
+- required comparison data,
+- supported comparison statuses,
+- supported severity values,
+- confidence values between `0` and `1`,
+- expected response structure.
 
-Malformed or unexpected AI responses are rejected rather than silently
-persisted.
+Malformed or unexpected responses are rejected rather than silently persisted.
 
-``` text
+```text
 LLM Output
     |
     v
@@ -365,24 +307,21 @@ Deterministic Business Rules
 Salesforce Persistence
 ```
 
-------------------------------------------------------------------------
+---
 
 ## Salesforce User Experience
 
 ### Analyze Contract Flow
 
-The **Analyze Contract with AI** Screen Flow provides the main user
-interaction.
+The **Analyze Contract with AI** Screen Flow provides the main user interaction.
 
-The user selects the exact contract PDF version that should be analyzed:
+The user selects the exact contract PDF version to analyze:
 
 ![Contract PDF Selection](docs/screenshots/contract-pdf-selection.png)
 
-The selector is implemented as a custom Flow Screen LWC and works with
-Salesforce `ContentVersion` records.
+The selector is implemented as a custom Flow Screen LWC and works with Salesforce `ContentVersion` records.
 
-After the API analysis completes, the Flow displays the overall result,
-discrepancy count, and AI-generated summary:
+After analysis, the Flow displays the overall result, discrepancy count, and AI-generated summary:
 
 ![Contract Analysis Result](docs/screenshots/analysis-result-match.png)
 
@@ -390,89 +329,55 @@ The Flow also contains a dedicated fault path for analysis failures.
 
 ### Latest Contract Review
 
-The `contractReviewPanel` Lightning Web Component displays the latest
-persisted analysis directly on the Opportunity.
+The `contractReviewPanel` Lightning Web Component displays the latest persisted analysis directly on the Opportunity.
 
-It includes:
+It presents:
 
--   overall result,
--   analysis date,
--   model,
--   discrepancy count,
--   AI summary,
--   field-level discrepancies,
--   Salesforce and contract values,
--   confidence,
--   contract evidence,
--   explanation,
--   navigation to the persisted review record.
+- overall result,
+- analysis date,
+- model,
+- discrepancy count,
+- AI summary,
+- field-level discrepancies,
+- Salesforce and contract values,
+- confidence,
+- contract evidence,
+- explanation,
+- navigation to the persisted review record.
 
-This allows the result to remain visible after the analysis Flow has
-finished.
+This keeps the analysis visible after the Flow has finished.
 
-------------------------------------------------------------------------
+---
 
-## Persistence
+## Persistence and Audit Trail
 
-Each analysis creates a `Contract_Review__c` record.
+Each successful analysis creates a `Contract_Review__c` record.
 
-Only comparisons requiring attention are persisted as
-`Contract_Discrepancy__c` child records.
+Comparisons requiring attention are stored as `Contract_Discrepancy__c` child records, creating a Salesforce-side history of review executions rather than treating the AI response as transient UI output.
 
-This creates an auditable Salesforce-side history of contract analyses
-rather than treating the AI response as transient UI output.
+The Contract record can expose previous review executions alongside the source PDF files.
 
-The related Contract can therefore expose previous review executions
-alongside the source PDF files.
-
-Additional screenshots are available in:
-
-``` text
-docs/screenshots/contract-files-and-reviews.png
-docs/screenshots/contract-review-record.png
-```
-
-------------------------------------------------------------------------
+---
 
 ## Security Design
 
-The project follows Salesforce's layered security model.
+The project uses Salesforce's security model rather than embedding credentials or bypassing record access in custom code.
 
 ### Record-Level Security
 
-Core services use `with sharing`, keeping Salesforce record sharing
-rules in the execution model.
+Core Apex services use `with sharing`, keeping Salesforce record sharing in the execution model.
 
-The AI integration therefore does not intentionally provide a mechanism
-for bypassing record-level access to the underlying Salesforce records.
+### Application Permissions
 
-### CRUD and Field-Level Security
-
-Dedicated permission configuration grants the access required by the
-application.
-
-The intended application user can:
-
--   read the required Opportunity data,
--   read the required Account data,
--   read the related Contract,
--   access the required Salesforce Files,
--   execute the analysis Flow,
--   use the configured External Credential principal,
--   create and read Contract Reviews,
--   create and read Contract Discrepancies.
-
-The application does not require users to modify the source commercial
-data as part of the analysis process.
+Dedicated permission sets and permission set groups provide access required by the application, including the relevant Salesforce data, Flow, Apex classes, review records, and External Credential principal.
 
 ### API Credentials
 
-The Anthropic API key is **not stored in Apex, Flow, Custom Metadata, or
-source control**.
+The Anthropic API key is **not stored in Apex, Flow, Custom Metadata, or source control**.
 
 Authentication uses:
 
-``` text
+```text
 Named Credential
     |
     v
@@ -485,114 +390,72 @@ Named Principal
 Secret configured in Salesforce
 ```
 
-The repository contains the credential configuration but not the actual
-API secret.
+The repository contains credential metadata, but not the actual API secret.
 
-------------------------------------------------------------------------
+---
 
 ## Error Handling
 
-The integration handles both Salesforce-side and external API failures.
+The application handles scenarios including:
 
-Examples include:
+- missing Opportunity Id,
+- missing related Contract,
+- missing or unavailable PDF,
+- invalid PDF selection,
+- Anthropic authentication failures,
+- API rate limiting and server errors,
+- malformed API responses,
+- malformed model JSON,
+- truncated model output,
+- unsupported status values,
+- unsupported severity values,
+- invalid confidence values.
 
--   missing Opportunity Id,
--   missing related Contract,
--   unavailable contract PDF,
--   invalid PDF selection,
--   Anthropic authentication failures,
--   API rate limiting,
--   server errors,
--   malformed Anthropic responses,
--   malformed model JSON,
--   incomplete or truncated model output,
--   invalid status values,
--   invalid severity values,
--   invalid confidence values.
+Flow fault handling provides a user-facing failure path instead of silently creating incomplete review records.
 
-Errors are surfaced through the application flow rather than silently
-creating incomplete analysis records.
-
-------------------------------------------------------------------------
+---
 
 ## Testing Strategy
 
-The project contains Apex tests covering the major application layers.
+The Apex test suite covers the main application layers.
 
 ### Integration Client
 
-Tests cover:
-
--   request construction,
--   Named Credential endpoint usage,
--   PDF payload construction,
--   successful responses,
--   HTTP error responses,
--   malformed Anthropic responses,
--   malformed model JSON,
--   incomplete output.
+Tests cover request construction, PDF payloads, successful API responses, HTTP errors, malformed responses, malformed model JSON, and truncated output.
 
 ### Contract Context
 
-Tests cover:
-
--   Opportunity data retrieval,
--   Contract data retrieval,
--   missing related records,
--   expected field mapping.
+Tests cover Opportunity and Contract retrieval, field mapping, and missing related data.
 
 ### Salesforce Files
 
-Tests cover:
-
--   contract file discovery,
--   PDF selection,
--   `ContentVersion` handling,
--   invalid file scenarios.
+Tests cover contract file discovery, PDF selection, `ContentVersion` handling, and invalid file scenarios.
 
 ### Analysis Service
 
-Tests cover:
-
--   response validation,
--   supported statuses,
--   supported severities,
--   confidence validation,
--   deterministic overall-status calculation.
+Tests cover response validation and deterministic overall-result calculation.
 
 ### Persistence
 
-Tests cover:
-
--   Contract Review creation,
--   discrepancy creation,
--   exclusion of `MATCH` results from discrepancy records,
--   relationship integrity.
+Tests cover Contract Review creation, discrepancy creation, relationship integrity, and exclusion of `MATCH` comparisons from discrepancy records.
 
 ### Security
 
-Tests include execution under restricted users to verify record-level
-access behavior.
+Tests include execution under restricted users to verify record-level access behavior.
 
-HTTP integrations are isolated using `HttpCalloutMock`, allowing the
-unit test suite to execute without calling the real Anthropic API.
+HTTP integrations use `HttpCalloutMock`, keeping unit tests deterministic and independent of external API availability.
 
-------------------------------------------------------------------------
+---
 
 ## LLM Evaluation
 
-Traditional unit tests validate deterministic application behavior, but
-they cannot prove that a language model interprets contract language
-correctly.
+Traditional unit tests validate deterministic application behavior, but they cannot prove that a language model interprets contract language correctly.
 
-The project therefore also uses a controlled **LLM evaluation suite**
-with synthetic contracts.
+The project therefore also includes a controlled **LLM evaluation suite** using synthetic contracts executed against the real Anthropic API.
 
 ### Evaluation Baseline
 
-The Salesforce baseline used during evaluation is:
-
-``` text
+```text
 Customer: Acme Sp. z o.o.
 Amount: USD 120,000
 Discount: 10%
@@ -605,116 +468,60 @@ Contract Term: 12 months
 
 ### Evaluation Scenarios
 
-  -------------------------------------------------------------------------
-  Scenario          Expected Result     Expected          Result
-                                        Discrepancy       
-  ----------------- ------------------- ----------------- -----------------
-  A - Full Match    `MATCH`             0                 PASS
+| Scenario | Expected Result | Expected Issue | Final Result |
+| --- | --- | --- | --- |
+| A - Full Match | `MATCH` | 0 discrepancies | PASS |
+| B - Explicit Mismatches | `MISMATCH` | Amount, Discount, Notice Period | PASS |
+| C - Missing Information | `REVIEW_REQUIRED` | Payment Terms -> `UNKNOWN` | PASS |
+| D - Conflicting Terms | `REVIEW_REQUIRED` | Discount -> `AMBIGUOUS` | PASS |
 
-  B - Explicit      `MISMATCH`          Amount, Discount, PASS
-  Mismatches                            Notice Period     
+### Evaluation-Driven Architecture Change
 
-  C - Missing       `REVIEW_REQUIRED`   Payment Terms -\> PASS
-  Information                           `UNKNOWN`         
+Scenario C exposed an important design issue.
 
-  D - Conflicting   `REVIEW_REQUIRED`   Discount -\>      PASS
-  Terms                                 `AMBIGUOUS`       
-  -------------------------------------------------------------------------
+Claude correctly classified the missing payment term as `UNKNOWN`, but the aggregate result returned by the model was inconsistent with the field-level classifications.
 
-### Scenario A - Full Match
+The overall review status was therefore moved to deterministic Apex logic.
 
-All contractual values match the Salesforce baseline.
+This created a clearer responsibility boundary:
 
-Expected:
+```text
+Claude
+    -> interprets individual contract terms
 
-``` text
-MATCH
-0 discrepancies
+Apex
+    -> validates the response
+    -> calculates the overall result
+    -> persists the result
 ```
 
-### Scenario B - Explicit Mismatches
+The final A-D regression suite passed after the architecture and prompt behavior were refined.
 
-The synthetic contract contains:
+Detailed evaluation methodology and the synthetic test documents are available in:
 
-``` text
-Amount: USD 115,000
-Discount: 15%
-Notice Period: 30 days
+**[LLM Evaluation](evaluation/README.md)**
+
+The evaluation contracts are stored in:
+
+```text
+evaluation/synthetic-contracts/
 ```
 
-while the remaining values match Salesforce.
-
-Expected:
-
-``` text
-MISMATCH
-3 discrepancies
-```
-
-### Scenario C - Missing Information
-
-The contract matches the Salesforce baseline but contains no payment
-terms.
-
-Expected:
-
-``` text
-REVIEW_REQUIRED
-
-paymentTerms -> UNKNOWN
-```
-
-This scenario exposed an important architecture issue during evaluation.
-
-Claude correctly classified the missing payment term as `UNKNOWN`, but
-the model-level aggregate result was inconsistent with the field-level
-classifications.
-
-The overall result was therefore moved to deterministic Apex logic
-instead of trusting the LLM's aggregate decision.
-
-### Scenario D - Conflicting Terms
-
-The contract contains conflicting definitive provisions:
-
-``` text
-Section 3.1: Discount = 10%
-Section 3.2: Discount = 15%
-```
-
-with no precedence rule establishing which provision controls.
-
-Expected:
-
-``` text
-REVIEW_REQUIRED
-
-discount -> AMBIGUOUS
-```
-
-All four final evaluation scenarios passed after the architecture and
-prompt behavior were refined.
-
-Detailed evaluation methodology and synthetic test documents are
-maintained under:
-
-**[`evaluation/README.md`](evaluation/README.md)**
-
-------------------------------------------------------------------------
+---
 
 ## Unit Tests vs LLM Evaluation
 
-The project deliberately separates two types of testing.
+The project deliberately separates deterministic software testing from probabilistic model evaluation.
 
 ### Apex Unit Tests
 
-Verify deterministic software behavior:
+Validate:
 
-``` text
+```text
 Apex logic
 API request construction
 JSON parsing
-validation
+response validation
 persistence
 security behavior
 error handling
@@ -722,9 +529,9 @@ error handling
 
 ### LLM Evaluation
 
-Verifies probabilistic model behavior:
+Evaluates:
 
-``` text
+```text
 contract interpretation
 missing information
 conflicting provisions
@@ -732,137 +539,116 @@ semantic comparison
 classification quality
 ```
 
-A mocked HTTP unit test cannot prove that the real model will correctly
-understand a contract.
+A mocked HTTP unit test cannot prove that the real model correctly interprets a contract.
 
-Conversely, a successful LLM evaluation does not replace deterministic
-Apex unit tests.
+Conversely, a successful LLM evaluation does not replace deterministic Apex unit tests.
 
-Both layers are therefore required.
+Both layers are required.
 
-------------------------------------------------------------------------
+---
 
 ## Reporting and Dashboard
 
-Persisted review data can be analyzed through native Salesforce
-reporting.
+Persisted review data is designed to support native Salesforce reporting, including:
 
-The reporting model is designed around:
+- reviews by overall result,
+- discrepancies by field,
+- discrepancies by severity.
 
--   reviews by overall result,
--   discrepancies by field,
--   discrepancies by severity.
+When dashboard metadata and its screenshot are included in the repository, the dashboard can be displayed here:
 
-The dashboard provides an aggregated view of AI contract-review
-activity.
-
+```markdown
 ![AI Contract Review Dashboard](docs/screenshots/dashboard.png)
+```
 
-------------------------------------------------------------------------
+---
 
 ## What the LLM Does - and Does Not Do
 
-The architecture deliberately limits the responsibilities of the
-language model.
-
 ### Claude is responsible for
 
--   reading unstructured contract content,
--   extracting relevant contractual information,
--   interpreting whether language is definitive or ambiguous,
--   comparing contract information with provided Salesforce values,
--   producing evidence and explanations,
--   returning structured classifications.
+- reading unstructured contract content,
+- extracting relevant contractual information,
+- interpreting whether contract language is definitive or ambiguous,
+- comparing contract information with provided Salesforce values,
+- producing evidence and explanations,
+- returning structured classifications.
 
 ### Salesforce is responsible for
 
--   record access,
--   structured data retrieval,
--   file access,
--   authentication,
--   response validation,
--   deterministic aggregation,
--   persistence,
--   authorization,
--   user interaction,
--   reporting.
+- record and file access,
+- structured data retrieval,
+- authentication,
+- response validation,
+- deterministic aggregation,
+- persistence,
+- authorization,
+- user interaction,
+- reporting.
 
-This separation keeps probabilistic document interpretation in the AI
-layer while retaining deterministic business controls inside Salesforce.
+This separation keeps probabilistic document interpretation in the AI layer while retaining deterministic business controls inside Salesforce.
 
-------------------------------------------------------------------------
+---
 
 ## Repository Structure
 
-``` text
+```text
 salesforce-ai-contract-review/
-|
-|-- README.md
-|
-|-- docs/
-|   |-- architecture.png
-|   `-- screenshots/
-|       |-- opportunity-review-required.png
-|       |-- opportunity-match.png
-|       |-- contract-pdf-selection.png
-|       |-- analysis-result-match.png
-|       |-- contract-files-and-reviews.png
-|       |-- contract-review-record.png
-|       `-- dashboard.png
-|
-|-- evaluation/
-|   |-- README.md
-|   `-- synthetic-contracts/
-|       |-- Contract_Eval_A_Full_Match.pdf
-|       |-- Contract_Eval_B_Explicit_Mismatches.pdf
-|       |-- Contract_Eval_C_Missing_Information.pdf
-|       `-- Contract_Eval_D_Conflicting_Terms.pdf
-|
-|-- force-app/
-|   `-- main/
-|       `-- default/
-|           |-- classes/
-|           |-- customMetadata/
-|           |-- externalCredentials/
-|           |-- flexipages/
-|           |-- flows/
-|           |-- lwc/
-|           |-- namedCredentials/
-|           |-- objects/
-|           |-- permissionsets/
-|           |-- permissionsetgroups/
-|           |-- quickActions/
-|           |-- reports/
-|           `-- dashboards/
-|
-|-- config/
-|-- scripts/
-|-- package.json
-`-- sfdx-project.json
+├── README.md
+├── docs/
+│   ├── architecture.png
+│   └── screenshots/
+│       ├── opportunity-review-required.png
+│       ├── opportunity-match.png
+│       ├── contract-pdf-selection.png
+│       └── analysis-result-match.png
+├── evaluation/
+│   ├── README.md
+│   └── synthetic-contracts/
+│       ├── Contract_Eval_A_Full_Match.pdf
+│       ├── Contract_Eval_B_Explicit_Mismatches.pdf
+│       ├── Contract_Eval_C_Missing_Information.pdf
+│       └── Contract_Eval_D_Conflicting_Terms.pdf
+├── force-app/
+│   └── main/
+│       └── default/
+│           ├── classes/
+│           ├── customMetadata/
+│           ├── externalCredentials/
+│           ├── flexipages/
+│           ├── flows/
+│           ├── lwc/
+│           ├── namedCredentials/
+│           ├── objects/
+│           ├── permissionsets/
+│           ├── permissionsetgroups/
+│           └── quickActions/
+├── config/
+├── scripts/
+├── package.json
+└── sfdx-project.json
 ```
 
-------------------------------------------------------------------------
+---
 
 ## Setup
 
 ### Prerequisites
 
-You need:
-
--   Salesforce CLI,
--   access to a Salesforce org,
--   an Anthropic API key,
--   appropriate permissions to deploy the Salesforce metadata.
+- Salesforce CLI
+- access to a Salesforce org
+- an Anthropic API key
+- permissions to deploy the required Salesforce metadata
 
 ### 1. Authenticate to Salesforce
 
-``` bash
+```bash
 sf org login web --alias contract-review
 ```
 
 ### 2. Deploy the Metadata
 
-``` bash
+```bash
 sf project deploy start \
   --source-dir force-app \
   --target-org contract-review
@@ -874,37 +660,30 @@ The repository intentionally does **not** contain an Anthropic API key.
 
 After deployment:
 
-1.  Open **Setup -\> Named Credentials**.
-2.  Locate the Anthropic External Credential.
-3.  Configure the Named Principal authentication parameter with a valid
-    Anthropic API key.
-4.  Ensure the application user has access to the External Credential
-    principal.
+1. Open **Setup -> Named Credentials**.
+2. Locate the Anthropic External Credential.
+3. Configure the Named Principal authentication parameter with a valid Anthropic API key.
+4. Ensure the application user has access to the External Credential principal.
 
 ### 4. Assign Application Permissions
 
-Assign the relevant permission set or permission set group to the user.
+Assign the relevant permission set or permission set group to the application user.
 
 ### 5. Prepare Test Data
 
-Create an Opportunity and related Contract containing the required
-comparison fields.
+Create an Opportunity with a related Contract containing the required comparison data.
 
-Upload at least one PDF to the related Contract using Salesforce Files.
+Upload at least one PDF to the Contract using Salesforce Files.
 
 ### 6. Run the Analysis
 
-Open the Opportunity and launch **Analyze Contract with AI**.
+Open the Opportunity, launch **Analyze Contract with AI**, select a contract PDF, and start the analysis.
 
-Select the contract PDF and start the analysis.
-
-------------------------------------------------------------------------
+---
 
 ## Running Apex Tests
 
-Run the Apex test suite using Salesforce CLI:
-
-``` bash
+```bash
 sf apex run test \
   --test-level RunLocalTests \
   --target-org contract-review \
@@ -912,77 +691,68 @@ sf apex run test \
   --code-coverage
 ```
 
-The Apex unit tests use mocked HTTP responses and do not require live
-Anthropic API calls.
+The Apex unit tests use mocked HTTP responses and do not require live Anthropic API calls.
 
-------------------------------------------------------------------------
+---
 
 ## Production Considerations
 
 This project is intentionally a proof of concept.
 
-A production implementation would require additional decisions depending
-on organizational requirements, including:
+A production implementation would require additional decisions depending on organizational requirements, including:
 
--   formal legal and compliance review,
--   data residency requirements,
--   AI provider data-processing policies,
--   contract confidentiality requirements,
--   observability and operational monitoring,
--   API usage and cost monitoring,
--   retry and rate-limit strategies,
--   asynchronous processing for larger workloads,
--   prompt and model lifecycle management,
--   expanded evaluation datasets,
--   regression testing across model versions,
--   human review and escalation workflows,
--   audit and retention policies.
+- legal and compliance review,
+- data residency and confidentiality requirements,
+- AI provider data-processing policies,
+- observability and operational monitoring,
+- API usage and cost monitoring,
+- retry and rate-limit strategies,
+- asynchronous processing for larger workloads,
+- prompt and model lifecycle management,
+- prompt version auditing,
+- expanded evaluation datasets,
+- regression testing across model versions,
+- human review and escalation workflows,
+- audit and retention policies.
 
-AI-generated results should be treated as decision support rather than a
-substitute for legal review.
+AI-generated results should be treated as decision support rather than a substitute for legal review.
 
-------------------------------------------------------------------------
+---
 
 ## Design Principles
 
-**AI output is untrusted input.**\
+**AI output is untrusted input.**  
 Model responses are validated before they affect Salesforce data.
 
-**Use AI where deterministic code is insufficient.**\
-Claude interprets unstructured language; Apex handles deterministic
-business logic.
+**Use AI where deterministic code is insufficient.**  
+Claude interprets unstructured language; Apex handles deterministic business logic.
 
-**Do not confuse missing information with disagreement.**\
-`UNKNOWN`, `AMBIGUOUS`, and `MISMATCH` represent different business
-situations.
+**Do not confuse missing information with disagreement.**  
+`UNKNOWN`, `AMBIGUOUS`, and `MISMATCH` represent different business situations.
 
-**Keep secrets outside source code.**\
+**Keep secrets outside source code.**  
 API authentication is handled through Salesforce credentials.
 
-**Respect Salesforce security.**\
-The AI integration should not become a mechanism for bypassing record
-access.
+**Respect Salesforce security.**  
+The AI integration should not become a mechanism for bypassing record access.
 
-**Make AI behavior testable.**\
-Traditional unit tests are complemented by document-level LLM
-evaluation.
+**Make AI behavior testable.**  
+Traditional unit tests are complemented by document-level LLM evaluation.
 
-**Keep aggregate business decisions deterministic.**\
-The LLM interprets fields; Apex determines the final review status.
+**Keep aggregate business decisions deterministic.**  
+The LLM interprets individual fields; Apex determines the final review status.
 
-------------------------------------------------------------------------
+---
 
 ## Disclaimer
 
-This repository is a technical proof of concept created for
-demonstration and learning purposes.
+This repository is a technical proof of concept created for demonstration and learning purposes.
 
 All contract examples and evaluation data are synthetic.
 
-The project is not a legal review system, and AI-generated analysis
-should not be treated as legal advice.
+The project is not a legal review system, and AI-generated analysis should not be treated as legal advice.
 
-------------------------------------------------------------------------
+---
 
 ## Author
 
@@ -990,6 +760,4 @@ should not be treated as legal advice.
 
 Salesforce Developer / Technical Lead
 
-Built as a hands-on exploration of integrating Generative AI with
-Salesforce using native platform architecture, security controls,
-deterministic guardrails, and LLM evaluation.
+Built as a hands-on exploration of integrating Generative AI with Salesforce using native platform architecture, security controls, deterministic guardrails, and LLM evaluation.
