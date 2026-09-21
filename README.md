@@ -501,7 +501,6 @@ salesforce-ai-contract-review/
 │           ├── permissionsets/
 │           └── permissionsetgroups/
 ├── config/
-├── scripts/
 ├── package.json
 └── sfdx-project.json
 ```
@@ -526,7 +525,7 @@ sf org login web --alias contract-review
 ### 2. Deploy the Salesforce Metadata
 
 ```bash
-sf project deploy start   --source-dir force-app   --target-org contract-review
+sf project deploy start --source-dir force-app --target-org contract-review
 ```
 
 ### 3. Configure the Anthropic Credential
@@ -559,7 +558,7 @@ Open the Opportunity, launch **Analyze Contract with AI**, select the contract P
 ## Running Apex Tests
 
 ```bash
-sf apex run test   --test-level RunLocalTests   --target-org contract-review   --wait 20   --code-coverage
+sf apex run test --test-level RunLocalTests --target-org contract-review --wait 20 --code-coverage
 ```
 
 The Apex test suite uses mocked HTTP responses and does not require live Anthropic API calls.
