@@ -266,7 +266,8 @@ Before persistence, Apex validates the response, including:
 - supported comparison statuses,
 - supported severity values,
 - confidence values between `0` and `1`,
-- expected response structure.
+- expected response structure,
+- allowed comparison fields.
 
 Malformed or unsupported responses are rejected instead of being silently stored.
 
