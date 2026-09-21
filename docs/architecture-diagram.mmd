@@ -9,8 +9,7 @@ flowchart TB
         CTX --> CLAUDE["ClaudeClient"]
         FILESVC --> CLAUDE
         CLAUDE --> CRED["Named / External Credential"]
-        CRED --> JSON["Structured JSON"]
-        JSON --> VALIDATION["Apex Validation"]
+        JSON["Structured JSON"] --> VALIDATION["Apex Validation"]
         VALIDATION --> RULES["Deterministic Business Rules"]
         RULES --> RESULT["Contract Review + Contract Discrepancies"]
         RESULT --> PANEL["Opportunity Review LWC"]
