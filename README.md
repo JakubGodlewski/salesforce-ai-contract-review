@@ -473,6 +473,8 @@ The architecture therefore uses AI where semantic interpretation is required whi
 salesforce-ai-contract-review/
 ├── README.md
 ├── docs/
+│   ├── architecture-diagram.mmd
+│   ├── architecture-diagram.png
 │   └── screenshots/
 │       ├── analysis-result-match.png
 │       ├── contract-files-and-reviews.png

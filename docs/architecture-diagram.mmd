@@ -4,16 +4,17 @@ flowchart TB
         OPP --> FLOW["Screen Flow + LWC"]
         FILES --> FLOW
         FLOW --> SERVICE["ContractAnalysisService"]
-        SERVICE --> CTX["ContractContext"]
-        SERVICE --> FILESVC["ContractFile"]
+        SERVICE --> CTX["ContractContextService"]
+        SERVICE --> FILESVC["ContractFileService"]
         CTX --> CLAUDE["ClaudeClient"]
         FILESVC --> CLAUDE
         CLAUDE --> CRED["Named / External Credential"]
+        CRED --> JSON["Structured JSON"]
+        JSON --> VALIDATION["Apex Validation"]
+        VALIDATION --> RULES["Deterministic Business Rules"]
+        RULES --> RESULT["Contract Review + Contract Discrepancies"]
+        RESULT --> PANEL["Opportunity Review LWC"]
     end
 
     CRED --> ANTHROPIC["Anthropic API"]
-    ANTHROPIC --> JSON["Structured JSON"]
-    JSON --> VALIDATION["Apex Validation"]
-    VALIDATION --> RULES["Deterministic Business Rules"]
-    RULES --> RESULT["Contract Review + Contract Discrepancies"]
-    RESULT --> PANEL["Opportunity Review LWC"]
+    ANTHROPIC --> JSON
