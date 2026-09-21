@@ -106,42 +106,42 @@ public with sharing class ContractAnalysisService {
             validateComparison(comparison);
         }
 
-            result.overallStatus = determineOverallStatus(result.comparisons);
+        result.overallStatus = determineOverallStatus(result.comparisons);
     }
 
-        private static String determineOverallStatus(
-            List<ContractAnalysisResult.Comparison> comparisons
+    private static String determineOverallStatus(
+        List<ContractAnalysisResult.Comparison> comparisons
+    ) {
+
+        Boolean hasMismatch = false;
+        Boolean requiresReview = false;
+
+        for (
+            ContractAnalysisResult.Comparison comparison :
+            comparisons
         ) {
+            if (comparison.status == 'MISMATCH') {
+                hasMismatch = true;
+            }
 
-            Boolean hasMismatch = false;
-            Boolean requiresReview = false;
-
-            for (
-                ContractAnalysisResult.Comparison comparison :
-                comparisons
+            if (
+                comparison.status == 'UNKNOWN' ||
+                comparison.status == 'AMBIGUOUS'
             ) {
-                if (comparison.status == 'MISMATCH') {
-                    hasMismatch = true;
-                }
-
-                if (
-                    comparison.status == 'UNKNOWN' ||
-                    comparison.status == 'AMBIGUOUS'
-                ) {
-                    requiresReview = true;
-                }
+                requiresReview = true;
             }
-
-            if (hasMismatch) {
-                return 'MISMATCH';
-            }
-
-            if (requiresReview) {
-                return 'REVIEW_REQUIRED';
-            }
-
-            return 'MATCH';
         }
+
+        if (hasMismatch) {
+            return 'MISMATCH';
+        }
+
+        if (requiresReview) {
+            return 'REVIEW_REQUIRED';
+        }
+
+        return 'MATCH';
+    }
 
     /**
      * Validates a single comparison returned by Claude.
